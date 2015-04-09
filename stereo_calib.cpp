@@ -218,7 +218,7 @@ StereoCalib(const vector<string>& imagelist, Size boardSize, string camName, boo
     if( fs.isOpened() )
     {
         fs << "M1" << cameraMatrix[0] << "D1" << distCoeffs[0] <<
-            "M2" << cameraMatrix[1] << "D2" << distCoeffs[1];
+            "M2" << cameraMatrix[1] << "D2" << distCoeffs[1] << "imageSize" << imageSize;
         fs.release();
     }
     else

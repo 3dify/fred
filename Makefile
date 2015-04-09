@@ -9,7 +9,7 @@ TARGETS	= stereo_calib app
 
 all: $(TARGETS)
 
-app: app.o params.o cam.o pair.o
+app: app.o params.o 
 	$(LINK) $(LIBS) -o $@ params.o cam.o pair.o $< $(LDFLAGS)
 
 stereo_calib: stereo_calib.o

@@ -39,8 +39,8 @@ Pair App::readProperties(string intrinsicfn, string extrinsicfn) {
   exfs["Q"] >> Q;
 
   
-  Cam left(M1, D1, R1, P1);
-  Cam right(M2, D2, R2, P2);
+  Cam left = (Cam) { M1, D1, R1, P1 };
+  Cam right = (Cam) { M2, D2, R2, P2 };
  
   Pair campair = (Pair) { R, T, Q, left, right }; 
 
@@ -48,9 +48,9 @@ Pair App::readProperties(string intrinsicfn, string extrinsicfn) {
 }
 
 void App::run() {
-  cout << "tadaa" << endl;
   Pair campair = readProperties(p.intrinsic, p.extrinsic);
-  
+ 
+
     
   cout << campair.R << endl;
 

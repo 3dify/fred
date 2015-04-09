@@ -1,6 +1,7 @@
 #include <string>
 
 #include "params.h"
+#include "fred.h"
 
 using namespace std;
 

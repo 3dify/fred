@@ -6,5 +6,6 @@ struct Pair {
   cv::Mat Q;
   Cam left;
   Cam right;
+  cv::Size imageSize;
 };
 
