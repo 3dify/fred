@@ -11,8 +11,5 @@ struct Params {
   
   std::string intrinsic;
   std::string extrinsic;
-  
-
 };
-
 

@@ -232,23 +232,13 @@ StereoCalib(const vector<string>& imagelist, Size boardSize, string camName, boo
                   imageSize, R, T, R1, R2, P1, P2, Q,
                   CALIB_ZERO_DISPARITY, 1, imageSize, &validRoi[0], &validRoi[1]);
 
-    fs.open("out/" + camName + "_extrinsic.yml", CV_STORAGE_WRITE);
-    if( fs.isOpened() )
-    {
-        fs << "R" << R << "T" << T << "R1" << R1 << "R2" << R2 << "P1" << P1 << "P2" << P2 << "Q" << Q;
-        fs.release();
-    }
-    else
-        cout << "Error: can not save the intrinsic parameters\n";
 
     // OpenCV can handle left-right
     // or up-down camera arrangements
     bool isVerticalStereo = fabs(P2.at<double>(1, 3)) > fabs(P2.at<double>(0, 3));
 
 // COMPUTE AND DISPLAY RECTIFICATION
-    if( !showRectified )
-        return;
-
+    
     Mat rmap[2][2];
 // IF BY CALIBRATED (BOUGUET'S METHOD)
     if( useCalibrated )
@@ -280,6 +270,28 @@ StereoCalib(const vector<string>& imagelist, Size boardSize, string camName, boo
     //Precompute maps for cv::remap()
     initUndistortRectifyMap(cameraMatrix[0], distCoeffs[0], R1, P1, imageSize, CV_16SC2, rmap[0][0], rmap[0][1]);
     initUndistortRectifyMap(cameraMatrix[1], distCoeffs[1], R2, P2, imageSize, CV_16SC2, rmap[1][0], rmap[1][1]);
+    
+    fs.open("out/" + camName + "_extrinsic.yml", CV_STORAGE_WRITE);
+    if( fs.isOpened() )
+    {
+        fs << "R" << R 
+           << "T" << T 
+           << "R1" << R1 
+           << "R2" << R2 
+           << "P1" << P1 
+           << "P2" << P2 
+           << "Q" << Q 
+           << "URML1" << rmap[0][0] 
+           << "URML2" << rmap[0][1] 
+           << "URMR1" << rmap[1][0] 
+           << "URMR2" << rmap[1][1];
+        fs.release();
+    }
+    else
+        cout << "Error: can not save the intrinsic parameters\n";
+
+    if( !showRectified )
+        return;
 
     Mat canvas;
     double sf;
@@ -397,6 +409,6 @@ int main(int argc, char** argv)
         return print_help();
     }
 
-    StereoCalib(imagelist, boardSize, imagelistfn, true, showRectified);
+    StereoCalib(imagelist, boardSize, imagelistfn, false, showRectified);
     return 0;
 }

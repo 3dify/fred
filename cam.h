@@ -1,11 +1,9 @@
-#ifndef CAM_H
-#define CAM_H
-
 struct Cam {
   cv::Mat M;
   cv::Mat D;
   cv::Mat R;
   cv::Mat P;
+  cv::Mat Map1;
+  cv::Mat Map2;
 };
 
-#endif

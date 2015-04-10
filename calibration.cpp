@@ -8,7 +8,7 @@ Pair Calibration::createPair(string intrinsic, string extrinsic) {
   FileStorage infs(intrinsic, FileStorage::READ);
   FileStorage exfs(extrinsic, FileStorage::READ);
   
-  Mat M1, M2, D1, D2, R1, R2, P1, P2, R, T, Q;
+  Mat M1, M2, D1, D2, R1, R2, P1, P2, R, T, Q, RL1, RL2, RR1, RR2;
   
   infs["M1"] >> M1;
   infs["M2"] >> M2;
@@ -27,9 +27,14 @@ Pair Calibration::createPair(string intrinsic, string extrinsic) {
   exfs["T"] >> T;
   exfs["Q"] >> Q;
 
-  
-  Cam left = (Cam) { M1, D1, R1, P1 };
-  Cam right = (Cam) { M2, D2, R2, P2 };
+  exfs["URML1"] >> RL1;
+  exfs["URMR1"] >> RR1;
+
+  exfs["URML2"] >> RL2;
+  exfs["URMR2"] >> RR2;
+
+  Cam left = (Cam) { M1, D1, R1, P1, RL1, RL2 };
+  Cam right = (Cam) { M2, D2, R2, P2, RR1, RR2 };
  
   return (Pair) { R, T, Q, left, right, imageSize }; 
 }
@@ -37,64 +42,9 @@ Pair Calibration::createPair(string intrinsic, string extrinsic) {
 Calibration::Calibration(Mat left, Mat right, Pair camPair)
   : left(left), right(right), camPair(camPair) {}
 
-void Calibration::remapImage(Mat src, Mat &dst, Cam cam) {
-  Mat Map1, Map2;
-  Size size = src.size();
-  cout << size << endl;
-  initUndistortRectifyMap(cam.M, cam.D, cam.R, cam.P, size, CV_16SC2, Map1, Map2);
-  remap(src, dst, Map1, Map2, INTER_LINEAR);
+
+void Calibration::remapImages() {
+  remap(left, leftRect, camPair.left.Map1, camPair.right.Map2, INTER_LINEAR);
+  remap(right, rightRect, camPair.right.Map1, camPair.right.Map2, INTER_LINEAR);
 }
 
-void Calibration::remapImages(Mat &left_dst, Mat &right_dst) {
-  remapImage(left, left_dst, camPair.left); 
-  remapImage(right, right_dst, camPair.right); 
-}
-
-void Calibration::computeMatches() {
-  cout << "feature detect" << endl;
-  // detect
-  Ptr<FeatureDetector> detector;
-  detector = new DynamicAdaptedFeatureDetector ( new FastAdjuster(10,true), 5000, 10000, 10);
-  detector->detect(left, kp1);
-  detector->detect(right, kp2);
-
-  cout << "extract descriptors (SIFT)" << endl;
-  // extract
-  Ptr<DescriptorExtractor> extractor = DescriptorExtractor::create("SIFT");
-  extractor->compute( left, kp1, desc1 );
-  extractor->compute( right, kp2, desc2 );
-
-  cout << "match descriptors" << endl;
-  // match
-  vector< vector<DMatch> > allmatches;
-  Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create("BruteForce");
-  matcher->knnMatch( desc1, desc2, allmatches, 500 );
-
-  //look whether the match is inside a defined area of the image
-  //only 25% of maximum of possible distance
-  double tresholdDist = 0.25 * sqrt(double(left.size().height*left.size().height + left.size().width*left.size().width));
-
-  cout << "filtering" << endl;
-
-  int saved = 0;
-  // filter
-  matches.reserve(allmatches.size());
-  for (size_t i = 0; i < allmatches.size(); ++i) {
-    for (int j = 0; j < allmatches[i].size(); j++) {
-      Point2f from = kp1[allmatches[i][j].queryIdx].pt;
-      Point2f to = kp2[allmatches[i][j].trainIdx].pt;
-
-      //calculate local distance for each possible match
-      double dist = sqrt((from.x - to.x) * (from.x - to.x) + (from.y - to.y) * (from.y - to.y));
-
-      //save as best match if local distance is in specified area and on same height
-      if (dist < tresholdDist && abs(from.y-to.y)<5) {
-        matches.push_back(allmatches[i][j]);
-        j = allmatches[i].size();
-        saved++;
-      }
-    }
-  }
-
-  cout << "matches size: " << matches.size() << " ~ " << saved << endl;
-}

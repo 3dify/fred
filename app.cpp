@@ -24,6 +24,8 @@ void display(cv::Mat img, bool wait = false) {
   sstream << "display-" << count;
   std::string name = sstream.str();
   
+  cout << "displaying: " << name << endl;
+
   cv::namedWindow(name
       , cv::WINDOW_NORMAL 
       & CV_WINDOW_KEEPRATIO 
@@ -61,11 +63,9 @@ void App::run() {
   
   Calibration calibration(left, right, camPair);
 
-  Mat left_rect, right_rect;
-  calibration.computeMatches();
-
-  calibration.remapImages(left_rect, right_rect); 
-  // display(left_rect, true);
+  calibration.remapImages(); 
+  
+  display(calibration.leftRect, true);
 }
 
 static void printHelp() {
