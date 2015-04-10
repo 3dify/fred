@@ -1,8 +1,6 @@
 #include <string>
 #include <iostream>
 
-#include "opencv2/core/core.hpp"
-
 #include "fred.h"
 #include "params.h"
 #include "app.h"
@@ -61,15 +59,13 @@ void App::readImages(string leftfn, string rightfn, Mat &left, Mat &right) {
   cvtColor(right_src, right, CV_BGR2GRAY);
 }
 
-void App::remap(Pair campair, Mat[2][2] &rmap) {
+void App::remapImages(Pair campair, Mat left, Mat right, Mat left_rect, Mat right_rect) {
+  Mat rmap[2][2];
   initUndistortRectifyMap(campair.left.M, campair.left.D, campair.left.R, campair.left.P, campair.imageSize, CV_16SC2, rmap[0][0], rmap[0][1]);
   initUndistortRectifyMap(campair.right.M, campair.right.D, campair.left.R, campair.left.P, campair.imageSize, CV_16SC2, rmap[1][0], rmap[1][1]);
 
-  // cout << "remapping" << endl;
-
-  // Mat left_rect, right_rect;
-  // remap(left, left_rect, rmap[0][0], rmap[0][1], CV_INTER_LINEAR);
-  // remap(right, right_rect, rmap[1][0], rmap[1][1], CV_INTER_LINEAR);
+  remap(left, left_rect, rmap[0][0], rmap[0][1], CV_INTER_LINEAR);
+  remap(right, right_rect, rmap[1][0], rmap[1][1], CV_INTER_LINEAR);
 }
 
 void App::run() {
@@ -78,15 +74,15 @@ void App::run() {
   Mat left, right;
   readImages(p.left, p.right, left, right); 
  
-  Mat rmap[2][2];
-  remap(campair, rmap); 
-    
-  cout << campair.imageSize << endl;
+  Mat left_rect, right_rect;
+  remapImages(campair, left, right, left_rect, right_rect); 
 
+  imshow("left", left_rect);
+  waitKey(0);
 }
 
 static void printHelp() {
-  cout << "Usage: epipolar\n"
+  cout << "Usage: ./app\n"
   << "\t--intrinsic <intrinsic.yml> --extrinsic <extrinsic.yml>\n";
   help_showed = true;
 }
