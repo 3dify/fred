@@ -50,26 +50,25 @@ void Calibration::remapImages(Mat &left_dst, Mat &right_dst) {
   remapImage(right, right_dst, camPair.right); 
 }
 
-void Calibration::getMatches(vector<KeyPoint> &keypoints_1, vector<KeyPoint> &keypoints_2
-  , Mat &descriptors_1, Mat &descriptors_2, vector< DMatch > &good_matches) {
+void Calibration::computeMatches() {
   cout << "feature detect" << endl;
   // detect
   Ptr<FeatureDetector> detector;
   detector = new DynamicAdaptedFeatureDetector ( new FastAdjuster(10,true), 5000, 10000, 10);
-  detector->detect(left, keypoints_1);
-  detector->detect(right, keypoints_2);
+  detector->detect(left, kp1);
+  detector->detect(right, kp2);
 
   cout << "extract descriptors (SIFT)" << endl;
   // extract
   Ptr<DescriptorExtractor> extractor = DescriptorExtractor::create("SIFT");
-  extractor->compute( left, keypoints_1, descriptors_1 );
-  extractor->compute( right, keypoints_2, descriptors_2 );
+  extractor->compute( left, kp1, desc1 );
+  extractor->compute( right, kp2, desc2 );
 
   cout << "match descriptors" << endl;
   // match
-  vector< vector<DMatch> > matches;
+  vector< vector<DMatch> > allmatches;
   Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create("BruteForce");
-  matcher->knnMatch( descriptors_1, descriptors_2, matches, 500 );
+  matcher->knnMatch( desc1, desc2, allmatches, 500 );
 
   //look whether the match is inside a defined area of the image
   //only 25% of maximum of possible distance
