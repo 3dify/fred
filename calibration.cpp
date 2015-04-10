@@ -78,23 +78,23 @@ void Calibration::computeMatches() {
 
   int saved = 0;
   // filter
-  good_matches.reserve(matches.size());
-  for (size_t i = 0; i < matches.size(); ++i) {
-    for (int j = 0; j < matches[i].size(); j++) {
-      Point2f from = keypoints_1[matches[i][j].queryIdx].pt;
-      Point2f to = keypoints_2[matches[i][j].trainIdx].pt;
+  matches.reserve(allmatches.size());
+  for (size_t i = 0; i < allmatches.size(); ++i) {
+    for (int j = 0; j < allmatches[i].size(); j++) {
+      Point2f from = kp1[allmatches[i][j].queryIdx].pt;
+      Point2f to = kp2[allmatches[i][j].trainIdx].pt;
 
       //calculate local distance for each possible match
       double dist = sqrt((from.x - to.x) * (from.x - to.x) + (from.y - to.y) * (from.y - to.y));
 
       //save as best match if local distance is in specified area and on same height
       if (dist < tresholdDist && abs(from.y-to.y)<5) {
-        good_matches.push_back(matches[i][j]);
-        j = matches[i].size();
+        matches.push_back(allmatches[i][j]);
+        j = allmatches[i].size();
         saved++;
       }
     }
   }
 
-  cout << "matches size: " << good_matches.size() << " ~ " << saved << endl;
+  cout << "matches size: " << matches.size() << " ~ " << saved << endl;
 }
