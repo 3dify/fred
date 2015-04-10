@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-make
+make app
 
 # ./bin/stereo_calib -w 7 -h 10 -nr stereo_calib_SP1
 

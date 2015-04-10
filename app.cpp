@@ -3,6 +3,7 @@
 #include "fred.h"
 #include "params.h"
 #include "calibration.h"
+#include "pointcloud.h"
 #include "app.h"
 
 using namespace cv;
@@ -63,9 +64,12 @@ void App::run() {
   
   Calibration calibration(left, right, camPair);
 
-  calibration.remapImages(); 
+  calibration.remapImages();
+
+  Pointcloud pointcloud(calibration);
+  pointcloud.computePointcloud();
   
-  display(calibration.leftRect, true);
+  display(pointcloud.reprojected, true);
 }
 
 static void printHelp() {
