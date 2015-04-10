@@ -1,4 +1,8 @@
+#ifndef FRED_H
+#define FRED_H
+
 #include <stdexcept>
+#include <iostream>
 
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
@@ -8,3 +12,5 @@
 
 #include "cam.h"
 #include "pair.h"
+
+#endif

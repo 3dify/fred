@@ -1,51 +1,45 @@
 #include <string>
-#include <iostream>
 
 #include "fred.h"
 #include "params.h"
+#include "calibration.h"
 #include "app.h"
 
 using namespace cv;
 using namespace std;
 
-bool help_showed = false;
+void display(cv::Mat img, bool wait = false) {
+  static int count = 0;
+  
+  float factor = 0.3;
+  
+  int w = round(factor * img.cols);
+  int h = round(factor * img.rows);
+ 
+  cv::Mat dst;
+  cv::Size size(w, h);
+  cv::resize(img, dst, size);
 
+  std::ostringstream sstream;
+  sstream << "display-" << count;
+  std::string name = sstream.str();
+  
+  cv::namedWindow(name
+      , cv::WINDOW_NORMAL 
+      & CV_WINDOW_KEEPRATIO 
+      & CV_GUI_EXPANDED);
+  cv::imshow(name, dst);
+  
+  if(wait) cv::waitKey(0);
+  
+  count++;
+}
+
+bool help_showed = false;
 
 App::App(const Params& params)
 : p(params), running(false) {
   cv::gpu::printShortCudaDeviceInfo(cv::gpu::getDevice());
-}
-
-Pair App::readProperties(string intrinsicfn, string extrinsicfn) {
-  FileStorage infs(intrinsicfn, FileStorage::READ);
-  FileStorage exfs(extrinsicfn, FileStorage::READ);
-
-  Mat M1, M2, D1, D2, R1, R2, P1, P2, R, T, Q;
-  
-  infs["M1"] >> M1;
-  infs["M2"] >> M2;
-  infs["D1"] >> D1;
-  infs["D2"] >> D2;
-
-  Size imageSize;
-  infs["imageSize"] >> imageSize;
-
-  exfs["R1"] >> R1;
-  exfs["R2"] >> R2;
-  exfs["P1"] >> P1;
-  exfs["P2"] >> P2;
-
-  exfs["R"] >> R;
-  exfs["T"] >> T;
-  exfs["Q"] >> Q;
-
-  
-  Cam left = (Cam) { M1, D1, R1, P1 };
-  Cam right = (Cam) { M2, D2, R2, P2 };
- 
-  Pair campair = (Pair) { R, T, Q, left, right, imageSize }; 
-
-  return campair;
 }
 
 void App::readImages(string leftfn, string rightfn, Mat &left, Mat &right) {
@@ -59,26 +53,17 @@ void App::readImages(string leftfn, string rightfn, Mat &left, Mat &right) {
   cvtColor(right_src, right, CV_BGR2GRAY);
 }
 
-void App::remapImages(Pair campair, Mat left, Mat right, Mat left_rect, Mat right_rect) {
-  Mat rmap[2][2];
-  initUndistortRectifyMap(campair.left.M, campair.left.D, campair.left.R, campair.left.P, campair.imageSize, CV_16SC2, rmap[0][0], rmap[0][1]);
-  initUndistortRectifyMap(campair.right.M, campair.right.D, campair.left.R, campair.left.P, campair.imageSize, CV_16SC2, rmap[1][0], rmap[1][1]);
-
-  remap(left, left_rect, rmap[0][0], rmap[0][1], CV_INTER_LINEAR);
-  remap(right, right_rect, rmap[1][0], rmap[1][1], CV_INTER_LINEAR);
-}
-
 void App::run() {
-  Pair campair = readProperties(p.intrinsic, p.extrinsic);
- 
   Mat left, right;
   readImages(p.left, p.right, left, right); 
- 
-  Mat left_rect, right_rect;
-  remapImages(campair, left, right, left_rect, right_rect); 
+  
+  Pair camPair = Calibration::createPair(p.intrinsic, p.extrinsic);
+  
+  Calibration calibration(left, right, camPair);
 
-  imshow("left", left_rect);
-  waitKey(0);
+  Mat left_rect, right_rect;
+  calibration.remapImages(left_rect, right_rect); 
+  // display(left_rect, true);
 }
 
 static void printHelp() {

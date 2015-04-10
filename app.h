@@ -4,7 +4,7 @@ struct App {
   void run();
   void printParams();
   void readImages(std::string leftfn, std::string rightfn, cv::Mat &left, cv::Mat &right);
-  void remapImages(Pair campair, cv::Mat left, cv::Mat right, cv::Mat left_rect, cv::Mat right_rect);
+  void remapImage(cv::Mat left, cv::Mat &dst, Cam cam, cv::Size size);
   Pair readProperties(std::string intrinsicfn, std::string extrinsicfn);
 private:
   Params p;

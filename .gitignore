@@ -2,5 +2,6 @@
 /out
 /app
 /stereo_calib
-*.o
+/tmp
+/bin
 

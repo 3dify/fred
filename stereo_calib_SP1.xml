@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <opencv_storage>
 <imagelist>
-"../subject-and-checkers/Pos1_SP1_L.png"
-"../subject-and-checkers/Pos1_SP1_R.png"
-"../subject-and-checkers/Pos2_SP1_L.png"
-"../subject-and-checkers/Pos2_SP1_R.png"
-"../subject-and-checkers/Pos3_SP1_L.png"
-"../subject-and-checkers/Pos3_SP1_R.png"
+"./test-data/Pos1_SP1_L.png"
+"./test-data/Pos1_SP1_R.png"
+"./test-data/Pos2_SP1_L.png"
+"./test-data/Pos2_SP1_R.png"
+"./test-data/Pos3_SP1_L.png"
+"./test-data/Pos3_SP1_R.png"
 </imagelist>
 </opencv_storage>
